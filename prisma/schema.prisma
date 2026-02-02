@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model DailyLog {
+  id         Int      @id @default(autoincrement())
+  date       String   @unique // YYYY-MM-DD
+  weightKg   Float?
+  bodyFatPct Float?
+  steps      Int?
+  note       String?
+
+  meals      MealEntry[]
+  workouts   WorkoutEntry[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum MealType {
+  breakfast
+  lunch
+  dinner
+  snack
+}
+
+model MealEntry {
+  id        Int      @id @default(autoincrement())
+  date      String
+  type      MealType
+  text      String
+
+  dailyLog  DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  dailyLogId Int
+
+  createdAt DateTime @default(now())
+
+  @@index([date])
+  @@index([dailyLogId])
+}
+
+model WorkoutEntry {
+  id        Int      @id @default(autoincrement())
+  date      String
+  activity  String
+  minutes   Int
+  intensity String?
+
+  dailyLog  DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  dailyLogId Int
+
+  createdAt DateTime @default(now())
+
+  @@index([date])
+  @@index([dailyLogId])
+}
